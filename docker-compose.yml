@@ -1,14 +1,14 @@
+name: CustomersService_API
+
 services:
   db:
     image: mysql:8.0
-    container_name: customers_db
     ports:
       - "3306:3306"
     env_file: ".env.local"
 
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: phpmyadmin
     ports:
       - "8081:80"
     environment:
