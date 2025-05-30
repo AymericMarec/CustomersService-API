@@ -6,6 +6,7 @@ use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -20,15 +21,18 @@ class Order
      * @var Collection<int, Customer>
      */
     #[ORM\ManyToMany(targetEntity: Customer::class, inversedBy: 'orders')]
+    #[Groups(['order_list'])]
     private Collection $ClientId;
 
     /**
      * @var Collection<int, Food>
      */
     #[ORM\ManyToMany(targetEntity: Food::class, inversedBy: 'orders')]
+    #[Groups(['order_list'])]
     private Collection $foods;
 
     #[ORM\Column]
+    #[Groups(['order_list'])]
     private ?int $tableNumber = null;
 
     public function __construct()

@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/foods', name: 'api_CustomersService')]
-final class CustomerServiceApiController extends AbstractController
+#[Route('/api/foods', name: 'app_foods')]
+final class FoodsController extends AbstractController
 {
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(FoodRepository $foodRepository): JsonResponse
