@@ -87,40 +87,59 @@ class OrderController extends AbstractController
         $order->setTableNumber(intval($data['tableNumber']));
         $order->setType($data['type'] ?? 'plats');
 
-        if (isset($data['items']) && is_array($data['items'])) {
-            foreach ($data['items'] as $item) {
-                if (!isset($item['foodId']) || !isset($item['quantity'])) {
-                    return new JsonResponse(['error' => 'Each item must have foodId and quantity'], Response::HTTP_BAD_REQUEST);
-                }
+         $grouped = [
+        'Starter' => [],
+        'Dish' => [],
+        'Dessert' => [],
+        'Drink' => [],
+        'Aperitif' => []
+    ];
 
-                $food = $foodRepository->find(intval($item['foodId']));
-                if (!$food) {
-                    return new JsonResponse(['error' => 'Food not found'], Response::HTTP_NOT_FOUND);
-                }
+    $date = new \DateTime();
+    $time = $date->format('H:i');
+    if (isset($data['order']) && is_array($data['order'])) {
+        foreach ($data['order'] as $item) {
+            if (!isset($item['id']) || !isset($item['quantity'])) {
+                return new JsonResponse(['error' => 'Each item must have id and quantity'], Response::HTTP_BAD_REQUEST);
+            }
 
-                $quantity = intval($item['quantity']);
-                if ($quantity <= 0) {
-                    return new JsonResponse(['error' => 'Quantity must be greater than 0'], Response::HTTP_BAD_REQUEST);
-                }
+            $food = $foodRepository->find(intval($item['id']));
+            if (!$food) {
+                return new JsonResponse(['error' => 'Food not found'], Response::HTTP_NOT_FOUND);
+            }
 
-                $orderItem = new OrderItem();
-                $orderItem->setFood($food);
-                $orderItem->setQuantity($quantity);
-                
-                $order->addOrderItem($orderItem);
+            $orderItem = new OrderItem();
+            $orderItem->setFood($food);
+            $orderItem->setQuantity(intval($item['quantity']));
+            $order->addOrderItem($orderItem);
+
+            $type = $food->getType()->value;
+            if (isset($grouped[$type])) {
+                $grouped[$type][] = [
+                    'name' => $food->getName(),
+                    'description' => $item['comments'] ?? '',
+                    'quantity' => intval($item['quantity'])
+                ];
             }
         }
+    }
 
         $em->persist($order);
         $em->flush();
 
-        $message = [
-            'tableNumber' => $data['tableNumber'] ?? null,
-            'type' => $data['type'] ?? 'entrees',
-            'time' => $data['time'] ?? date('H:i'),
-            'dishes' => $data['dishes'] ?? []
-        ];
+        $message = [];
+        foreach (['Starter' => 'entrees', 'Dish' => 'plats', 'Dessert' => 'desserts', 'Aperitif' => 'aperitifs', 'Drink' => 'boissons'] as $type => $label) {
+            if (!empty($grouped[$type])) {
+                $message[] = [
+                    'tableNumber' => $order->getTableNumber(),
+                    'type' => $label,
+                    'time' => $time,
+                    'dishes' => $grouped[$type]
+                ];
+            }
+        }
 
+        error_log(print_r($message, true));
         $client = new Client();
         try {
             $client->post('http://localhost:8765/broadcast', [
