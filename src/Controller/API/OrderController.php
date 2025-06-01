@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use GuzzleHttp\Client;
 
 
 #[Route('/api/order', name: 'app_order')]
@@ -34,13 +35,31 @@ final class OrderController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request): JsonResponse
-    {
-        $order = new Order();
-        $data = json_decode($request->getContent(), true);
-        $order->setTableNumber($data['tableNumber'] ?? null);
-        $em->persist($order);
-        $em->flush();
-        return new JsonResponse(['message' => 'Order created successfully'], Response::HTTP_CREATED);
+    public function create(EntityManagerInterface $em, Request $request): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $order = new Order();
+    $order->setTableNumber($data['tableNumber'] ?? null);
+    $em->persist($order);
+    $em->flush();
+
+    $message = [
+        'tableNumber' => $data['tableNumber'] ?? null,
+        'type' => $data['type'] ?? 'entrees',
+        'time' => $data['time'] ?? date('H:i'),
+        'dishes' => $data['dishes'] ?? []
+    ];
+
+    $client = new Client();
+    try {
+        $client->post('http://localhost:8765/broadcast', [
+            'json' => $message
+        ]);
+    } catch (\Exception $e) {
+        error_log('Erreur WS : ' . $e->getMessage());
+
+    }
+
+    return new JsonResponse(['message' => 'Order created successfully'], Response::HTTP_CREATED);
     }
 }
