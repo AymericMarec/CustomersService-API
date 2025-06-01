@@ -8,7 +8,7 @@ class CreateOrderRequest
 {
     #[Assert\Type('numeric')]
     #[Assert\NotBlank]
-    public $TableNumber;
+    public $tableNumber;
     
     /**
      * @var array<OrderItemRequest>
@@ -19,7 +19,7 @@ class CreateOrderRequest
 
     public function __construct()
     {
-        $this->TableNumber = intval($this->TableNumber);
+        $this->tableNumber = intval($this->tableNumber);
     }
 }
 

@@ -36,29 +36,13 @@ final class OrderController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
-    public function create(
-        Request $request,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        EntityManagerInterface $em
-    ): JsonResponse {
-        $createOrderRequest = $serializer->deserialize(
-            $request->getContent(),
-            CreateOrderRequest::class,
-            'json'
-        );
-
-        $errors = $validator->validate($createOrderRequest);
-        if (count($errors) > 0) {
-            return new JsonResponse(['errors' => (string) $errors], Response::HTTP_BAD_REQUEST);
-        }
-
+    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request): JsonResponse
+    {
         $order = new Order();
-        $order->setTableNumber($createOrderRequest->TableNumber);
-        
+        $data = json_decode($request->getContent(), true);
+        $order->setTableNumber(intval($data['tableNumber'] ?? null));
         $em->persist($order);
         $em->flush();
-        
         return new JsonResponse(['message' => 'Order created successfully'], Response::HTTP_CREATED);
     }
 }
