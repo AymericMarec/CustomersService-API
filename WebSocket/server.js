@@ -13,7 +13,7 @@ wss.on('connection', function connection(ws) {
     try {
       const data = JSON.parse(msg);
       if (data.type === 'register' && data.role) {
-        ws.role = data.role; // "kitchen" ou "waiter"
+        ws.role = data.role;
         console.log(`Client registered as ${ws.role}`);
       }
     } catch (e) {
@@ -36,33 +36,37 @@ function broadcastTo(role, data) {
 }
 
 const server = http.createServer((req, res) => {
+  console.log(`Received ${req.method} request for ${req.url}`);
+
   if (req.method === 'POST' && (req.url === '/kitchen' || req.url === '/waiter')) {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
-        const role = req.url.substring(1); 
+        const role = req.url.substring(1); // 'kitchen' ou 'waiter'
         broadcastTo(role, data);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
       } catch (e) {
+        console.error(e);
         res.writeHead(400);
         res.end('Invalid JSON');
       }
     });
-  } else if (req.url === '/ws') {
-    wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onSocketConnect);
-  } else {
-    res.writeHead(404);
-    res.end();
-  }
+  } 
 });
 
-function onSocketConnect(ws) {
-  wss.emit('connection', ws);
-}
+server.on('upgrade', (request, socket, head) => {
+  if (request.url === '/ws') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
 
 server.listen(8765, () => {
   console.log('HTTP + WebSocket server started on port 8765');
