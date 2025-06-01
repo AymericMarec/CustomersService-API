@@ -4,45 +4,58 @@ namespace App\Controller\API;
 
 use App\DTO\CreateOrderRequest;
 use App\Entity\Order;
+use App\Entity\OrderItem;
+use App\Repository\FoodRepository;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/order', name: 'app_order')]
-final class OrderController extends AbstractController
+#[Route('/api/orders')]
+class OrderController extends AbstractController
 {
-    #[Route('', name: 'list', methods: ['GET'])]
+    #[Route('', methods: ['GET'])]
     public function list(OrderRepository $orderRepository): JsonResponse
     {
         $orders = $orderRepository->findAll();
-        return $this->json($orders, Response::HTTP_OK, [], ['groups' => 'order_list']);
+        return $this->json($orders, 200, [], ['groups' => 'order_list']);
     }
 
-    #[Route('/{id}', name: 'get', methods: ['GET'])]
-    public function get(int $id, OrderRepository $orderRepository): JsonResponse
-    {
-        $order = $orderRepository->find($id);
-        if (!$order) {
-            return new JsonResponse(['error' => 'Order not found'], Response::HTTP_NOT_FOUND);
+    #[Route('', methods: ['POST'])]
+    public function create(
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        FoodRepository $foodRepository
+    ): JsonResponse {
+        $createOrderRequest = $serializer->deserialize(
+            $request->getContent(),
+            CreateOrderRequest::class,
+            'json'
+        );
+
+        $order = new Order();
+        $order->setTableNumber($createOrderRequest->tableNumber);
+
+        foreach ($createOrderRequest->items as $item) {
+            $food = $foodRepository->find($item->foodId);
+            if (!$food) {
+                return $this->json(['error' => 'Food not found'], 404);
+            }
+
+            $orderItem = new OrderItem();
+            $orderItem->setFood($food);
+            $orderItem->setQuantity($item->quantity);
+            
+            $order->addOrderItem($orderItem);
         }
 
-        return $this->json($order, Response::HTTP_OK, [], ['groups' => 'order_detail']);
-    }
+        $entityManager->persist($order);
+        $entityManager->flush();
 
-    #[Route('', name: 'create', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request): JsonResponse
-    {
-        $order = new Order();
-        $data = json_decode($request->getContent(), true);
-        $order->setTableNumber(intval($data['tableNumber'] ?? null));
-        $em->persist($order);
-        $em->flush();
-        return new JsonResponse(['message' => 'Order created successfully'], Response::HTTP_CREATED);
+        return $this->json($order, 201, [], ['groups' => 'order_list']);
     }
-}
+} 
