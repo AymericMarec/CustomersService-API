@@ -2,7 +2,6 @@
 
 namespace App\Controller\API;
 
-use App\DTO\CreateOrderRequest;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Repository\FoodRepository;
@@ -11,8 +10,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/orders')]
 class OrderController extends AbstractController
@@ -21,41 +20,48 @@ class OrderController extends AbstractController
     public function list(OrderRepository $orderRepository): JsonResponse
     {
         $orders = $orderRepository->findAll();
-        return $this->json($orders, 200, [], ['groups' => 'order_list']);
+        return $this->json($orders, Response::HTTP_OK, [], ['groups' => 'order_list']);
     }
 
     #[Route('', methods: ['POST'])]
-    public function create(
-        Request $request,
-        SerializerInterface $serializer,
-        EntityManagerInterface $entityManager,
-        FoodRepository $foodRepository
-    ): JsonResponse {
-        $createOrderRequest = $serializer->deserialize(
-            $request->getContent(),
-            CreateOrderRequest::class,
-            'json'
-        );
-
-        $order = new Order();
-        $order->setTableNumber($createOrderRequest->tableNumber);
-
-        foreach ($createOrderRequest->items as $item) {
-            $food = $foodRepository->find($item->foodId);
-            if (!$food) {
-                return $this->json(['error' => 'Food not found'], 404);
-            }
-
-            $orderItem = new OrderItem();
-            $orderItem->setFood($food);
-            $orderItem->setQuantity($item->quantity);
-            
-            $order->addOrderItem($orderItem);
+    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request, FoodRepository $foodRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['tableNumber']) || !is_numeric($data['tableNumber'])) {
+            return new JsonResponse(['error' => 'Table number is required and must be numeric'], Response::HTTP_BAD_REQUEST);
         }
 
-        $entityManager->persist($order);
-        $entityManager->flush();
+        $order = new Order();
+        $order->setTableNumber(intval($data['tableNumber']));
 
-        return $this->json($order, 201, [], ['groups' => 'order_list']);
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                if (!isset($item['foodId']) || !isset($item['quantity'])) {
+                    return new JsonResponse(['error' => 'Each item must have foodId and quantity'], Response::HTTP_BAD_REQUEST);
+                }
+
+                $food = $foodRepository->find(intval($item['foodId']));
+                if (!$food) {
+                    return new JsonResponse(['error' => 'Food not found'], Response::HTTP_NOT_FOUND);
+                }
+
+                $quantity = intval($item['quantity']);
+                if ($quantity <= 0) {
+                    return new JsonResponse(['error' => 'Quantity must be greater than 0'], Response::HTTP_BAD_REQUEST);
+                }
+
+                $orderItem = new OrderItem();
+                $orderItem->setFood($food);
+                $orderItem->setQuantity($quantity);
+                
+                $order->addOrderItem($orderItem);
+            }
+        }
+
+        $em->persist($order);
+        $em->flush();
+
+        return $this->json($order, Response::HTTP_CREATED, [], ['groups' => 'order_list']);
     }
 } 
