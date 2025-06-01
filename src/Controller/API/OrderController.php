@@ -25,7 +25,7 @@ class OrderController extends AbstractController
     }
 
     #[Route('', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request, FoodRepository $foodRepository): JsonResponse
+    public function create(EntityManagerInterface $em, Request $request, FoodRepository $foodRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         

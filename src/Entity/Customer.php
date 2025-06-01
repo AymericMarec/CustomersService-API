@@ -18,7 +18,7 @@ class Customer
     /**
      * @var Collection<int, Order>
      */
-    #[ORM\ManyToMany(targetEntity: Order::class, mappedBy: 'ClientId')]
+    #[ORM\ManyToMany(targetEntity: Order::class, mappedBy: 'customerId')]
     private Collection $orders;
 
     public function __construct()
@@ -43,7 +43,7 @@ class Customer
     {
         if (!$this->orders->contains($order)) {
             $this->orders->add($order);
-            $order->addClientId($this);
+            $order->addCustomerId($this);
         }
 
         return $this;
@@ -52,7 +52,7 @@ class Customer
     public function removeOrder(Order $order): static
     {
         if ($this->orders->removeElement($order)) {
-            $order->removeClientId($this);
+            $order->removeCustomerId($this);
         }
 
         return $this;
