@@ -23,7 +23,7 @@ class Order
      */
     #[ORM\ManyToMany(targetEntity: Customer::class, inversedBy: 'orders')]
     #[Groups(['order_list'])]
-    private Collection $ClientId;
+    private Collection $customerId;
 
     /**
      * @var Collection<int, OrderItem>
@@ -38,7 +38,7 @@ class Order
 
     public function __construct()
     {
-        $this->ClientId = new ArrayCollection();
+        $this->customerId = new ArrayCollection();
         $this->orderItems = new ArrayCollection();
     }
 
@@ -50,23 +50,23 @@ class Order
     /**
      * @return Collection<int, Customer>
      */
-    public function getClientId(): Collection
+    public function getCustomerId(): Collection
     {
-        return $this->ClientId;
+        return $this->customerId;
     }
 
-    public function addClientId(Customer $clientId): static
+    public function addCustomerId(Customer $customerId): static
     {
-        if (!$this->ClientId->contains($clientId)) {
-            $this->ClientId->add($clientId);
+        if (!$this->customerId->contains($customerId)) {
+            $this->customerId->add($customerId);
         }
 
         return $this;
     }
 
-    public function removeClientId(Customer $clientId): static
+    public function removeCustomerId(Customer $customerId): static
     {
-        $this->ClientId->removeElement($clientId);
+        $this->customerId->removeElement($customerId);
 
         return $this;
     }
