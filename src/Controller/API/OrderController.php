@@ -2,6 +2,7 @@
 
 namespace App\Controller\API;
 
+use App\DTO\CreateOrderRequest;
 use App\Entity\Order;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,7 +11,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/order', name: 'app_order')]
 final class OrderController extends AbstractController
@@ -34,21 +36,26 @@ final class OrderController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, OrderRepository $orderRepository, Request $request): JsonResponse
-    {
+    public function create(
+        Request $request,
+        SerializerInterface $serializer,
+        ValidatorInterface $validator,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $createOrderRequest = $serializer->deserialize(
+            $request->getContent(),
+            CreateOrderRequest::class,
+            'json'
+        );
+
+        $errors = $validator->validate($createOrderRequest);
+        if (count($errors) > 0) {
+            return new JsonResponse(['errors' => (string) $errors], Response::HTTP_BAD_REQUEST);
+        }
+
         $order = new Order();
-        $data = json_decode($request->getContent(), true);
+        $order->setTableNumber($createOrderRequest->TableNumber);
         
-        if (!isset($data['tableNumber'])) {
-            return new JsonResponse(['error' => 'tableNumber is required'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $tableNumber = filter_var($data['tableNumber'], FILTER_VALIDATE_INT);
-        if ($tableNumber === false) {
-            return new JsonResponse(['error' => 'tableNumber must be an integer'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $order->setTableNumber($tableNumber);
         $em->persist($order);
         $em->flush();
         
