@@ -24,6 +24,56 @@ class OrderController extends AbstractController
         return $this->json($orders, Response::HTTP_OK, [], ['groups' => 'order_list']);
     }
 
+    #[Route('/by-type/{type}', methods: ['GET'])]
+    public function getByType(string $type, OrderRepository $orderRepository): JsonResponse
+    {
+        $orders = $orderRepository->findByType($type);
+        return $this->json($orders, Response::HTTP_OK, [], ['groups' => 'order_list']);
+    }
+
+    #[Route('/by-table/{tableNumber}', methods: ['GET'])]
+    public function getByTable(int $tableNumber, OrderRepository $orderRepository): JsonResponse
+    {
+        $orders = $orderRepository->findByTableNumber($tableNumber);
+        return $this->json($orders, Response::HTTP_OK, [], ['groups' => 'order_list']);
+    }
+
+    #[Route('/validate-by-type/{type}', methods: ['POST'])]
+    public function validateByType(string $type, OrderRepository $orderRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $orders = $orderRepository->findByType($type);
+        
+        if (empty($orders)) {
+            return new JsonResponse(['message' => 'Aucune commande trouvée pour ce type'], Response::HTTP_NOT_FOUND);
+        }
+
+        foreach ($orders as $order) {
+            $order->setValidated(true);
+        }
+        
+        $em->flush();
+
+        return $this->json([
+            'message' => count($orders) . ' commande(s) validée(s)',
+            'validatedOrders' => $orders
+        ], Response::HTTP_OK, [], ['groups' => 'order_list']);
+    }
+
+    #[Route('/{id}/validate', methods: ['POST'])]
+    public function validate(int $id, OrderRepository $orderRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $order = $orderRepository->find($id);
+        
+        if (!$order) {
+            return new JsonResponse(['error' => 'Commande non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $order->setValidated(true);
+        $em->flush();
+
+        return $this->json($order, Response::HTTP_OK, [], ['groups' => 'order_list']);
+    }
+
     #[Route('', methods: ['POST'])]
     public function create(EntityManagerInterface $em, Request $request, FoodRepository $foodRepository): JsonResponse
     {
@@ -35,6 +85,7 @@ class OrderController extends AbstractController
 
         $order = new Order();
         $order->setTableNumber(intval($data['tableNumber']));
+        $order->setType($data['type'] ?? 'plats');
 
          $grouped = [
         'Starter' => [],
@@ -96,7 +147,6 @@ class OrderController extends AbstractController
             ]);
         } catch (\Exception $e) {
             error_log('Erreur WS : ' . $e->getMessage());
-
         }
 
         return $this->json($order, Response::HTTP_CREATED, [], ['groups' => 'order_list']);
