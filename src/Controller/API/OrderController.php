@@ -60,6 +60,13 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{id}/validate', methods: ['POST'])]
+    public function validateOrder()
+    {
+
+    }
+
+
+    #[Route('/{id}/validate', methods: ['POST'])]
     public function validate(int $id, OrderRepository $orderRepository, EntityManagerInterface $em): JsonResponse
     {
         $order = $orderRepository->find($id);
