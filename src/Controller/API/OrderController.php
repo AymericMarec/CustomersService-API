@@ -60,9 +60,9 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{id}/validate', methods: ['POST'])]
-    public function validateOrder()
+    public function validateOrder( Request $request)
     {
-
+        $data = json_decode($request->getContent(), true);
     }
 
 
