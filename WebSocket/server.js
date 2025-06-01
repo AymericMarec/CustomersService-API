@@ -36,6 +36,8 @@ const server = http.createServer((req, res) => {
         res.end('Invalid JSON');
       }
     });
+  }  else if (req.url === '/waiter' && req.url === '/broadcast') {
+
   } else if (req.url === '/ws') {
     wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onSocketConnect);
   } else {
