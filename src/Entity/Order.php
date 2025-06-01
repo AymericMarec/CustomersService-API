@@ -15,6 +15,7 @@ class Order
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['order_list'])]
     private ?int $id = null;
 
     /**
@@ -25,11 +26,11 @@ class Order
     private Collection $ClientId;
 
     /**
-     * @var Collection<int, Food>
+     * @var Collection<int, OrderItem>
      */
-    #[ORM\ManyToMany(targetEntity: Food::class, inversedBy: 'orders')]
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist'])]
     #[Groups(['order_list'])]
-    private Collection $foods;
+    private Collection $orderItems;
 
     #[ORM\Column]
     #[Groups(['order_list'])]
@@ -38,7 +39,7 @@ class Order
     public function __construct()
     {
         $this->ClientId = new ArrayCollection();
-        $this->foods = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -71,25 +72,30 @@ class Order
     }
 
     /**
-     * @return Collection<int, Food>
+     * @return Collection<int, OrderItem>
      */
-    public function getFoods(): Collection
+    public function getOrderItems(): Collection
     {
-        return $this->foods;
+        return $this->orderItems;
     }
 
-    public function addFood(Food $food): static
+    public function addOrderItem(OrderItem $orderItem): static
     {
-        if (!$this->foods->contains($food)) {
-            $this->foods->add($food);
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setOrder($this);
         }
 
         return $this;
     }
 
-    public function removeFood(Food $food): static
+    public function removeOrderItem(OrderItem $orderItem): static
     {
-        $this->foods->removeElement($food);
+        if ($this->orderItems->removeElement($orderItem)) {
+            if ($orderItem->getOrder() === $this) {
+                $orderItem->setOrder(null);
+            }
+        }
 
         return $this;
     }
