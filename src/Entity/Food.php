@@ -41,6 +41,10 @@ class Food
     #[ORM\ManyToMany(targetEntity: Order::class, mappedBy: 'foods')]
     private Collection $orders;
 
+    #[ORM\Column(length: 255)]
+    #[Groups(['food_list', 'food_detail'])]
+    private ?string $picture = null;
+
     public function __construct()
     {
         $this->orders = new ArrayCollection();
@@ -143,5 +147,17 @@ class Food
     public function __toString(): string
     {
         return $this->name . ' (' . $this->type->getLabel() . ')';
+    }
+
+    public function getPicture(): ?string
+    {
+        return $this->picture;
+    }
+
+    public function setPicture(string $picture): static
+    {
+        $this->picture = $picture;
+
+        return $this;
     }
 }
