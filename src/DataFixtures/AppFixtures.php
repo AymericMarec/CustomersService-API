@@ -241,5 +241,150 @@ class AppFixtures extends Fixture
         $manager->persist($food);
 
         $manager->flush();
+
+        // Aperitifs
+        $food = new Food();
+        $food->setName('Shrimp Cocktail');
+        $food->setPrice('8.50');
+        $food->setDescription('Crevettes fraîches servies avec une sauce cocktail maison.');
+        $food->setType(FoodType::APERITIF);
+        $food->setPicture('/uploads/foods/22.webp');
+        
+        $manager->persist($food);
+
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Prosciutto e Melone');
+        $food->setPrice('7.50');
+        $food->setDescription('Jambon de Parme finement tranché servi avec du melon frais.');
+        $food->setType(FoodType::APERITIF);
+        $food->setPicture('/uploads/foods/23.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Burrata con Pomodori');
+        $food->setPrice('8.50');
+        $food->setDescription('Burrata fraîche servie avec des tomates cerises et du basilic frais.');
+        $food->setType(FoodType::APERITIF);
+        $food->setPicture('/uploads/foods/24.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Calamari Fritti');
+        $food->setPrice('9.00');
+        $food->setDescription('Calamars frits croustillants servis avec une sauce marinara.');
+        $food->setType(FoodType::APERITIF);
+        $food->setPicture('/uploads/foods/25.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Olive Miste');
+        $food->setPrice('5.50');
+        $food->setDescription('Sélection d\'olives marines et d\'olives farcies.');
+        $food->setType(FoodType::APERITIF);
+        $food->setPicture('/uploads/foods/26.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        // Drinks
+        $food = new Food();
+        $food->setName('Prosecco');
+        $food->setPrice('6.00');
+        $food->setDescription('Vin mousseux italien frais et léger.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/27.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Chianti Classico');
+        $food->setPrice('7.50');
+        $food->setDescription('Vin rouge italien robuste de Toscane.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/28.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Pinot Grigio');
+        $food->setPrice('6.50');
+        $food->setDescription('Vin blanc italien sec et rafraîchissant.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/29.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Aperol Spritz');
+        $food->setPrice('8.00');
+        $food->setDescription('Cocktail italien classique à base d\'Aperol, prosecco et soda.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/30.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Negroni');
+        $food->setPrice('9.00');
+        $food->setDescription('Cocktail italien à base de gin, Campari et vermouth rouge.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/31.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Limonata');
+        $food->setPrice('4.50');
+        $food->setDescription('Limonade italienne fraîche faite maison.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/32.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('Espresso');
+        $food->setPrice('3.00');
+        $food->setDescription('Café italien fort et concentré.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/33.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
+
+        $food = new Food();
+        $food->setName('San Pellegrino');
+        $food->setPrice('3.50');
+        $food->setDescription('Eau minérale gazeuse italienne.');
+        $food->setType(FoodType::DRINK);
+        $food->setPicture('/uploads/foods/34.webp');
+        
+        $manager->persist($food);
+        
+        $manager->flush();
     }
 }
