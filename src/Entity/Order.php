@@ -36,6 +36,14 @@ class Order
     #[Groups(['order_list'])]
     private ?int $tableNumber = null;
 
+    #[ORM\Column(length: 50)]
+    #[Groups(['order_list'])]
+    private ?string $type = null;
+
+    #[ORM\Column]
+    #[Groups(['order_list'])]
+    private bool $validated = false;
+
     public function __construct()
     {
         $this->customerId = new ArrayCollection();
@@ -109,6 +117,28 @@ class Order
     {
         $this->tableNumber = $tableNumber;
 
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function isValidated(): bool
+    {
+        return $this->validated;
+    }
+
+    public function setValidated(bool $validated): static
+    {
+        $this->validated = $validated;
         return $this;
     }
 }

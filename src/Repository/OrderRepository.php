@@ -8,6 +8,11 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Order>
+ *
+ * @method Order|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Order|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Order[]    findAll()
+ * @method Order[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class OrderRepository extends ServiceEntityRepository
 {
@@ -40,4 +45,28 @@ class OrderRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findByType(string $type): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.type = :type')
+            ->andWhere('o.validated = :validated')
+            ->setParameter('type', $type)
+            ->setParameter('validated', false)
+            ->orderBy('o.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByTableNumber(int $tableNumber): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.tableNumber = :tableNumber')
+            ->andWhere('o.validated = :validated')
+            ->setParameter('tableNumber', $tableNumber)
+            ->setParameter('validated', false)
+            ->orderBy('o.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
