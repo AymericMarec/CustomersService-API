@@ -38,9 +38,20 @@ final class OrderController extends AbstractController
     {
         $order = new Order();
         $data = json_decode($request->getContent(), true);
-        $order->setTableNumber($data['tableNumber'] ?? null);
+        
+        if (!isset($data['tableNumber'])) {
+            return new JsonResponse(['error' => 'tableNumber is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $tableNumber = filter_var($data['tableNumber'], FILTER_VALIDATE_INT);
+        if ($tableNumber === false) {
+            return new JsonResponse(['error' => 'tableNumber must be an integer'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $order->setTableNumber($tableNumber);
         $em->persist($order);
         $em->flush();
+        
         return new JsonResponse(['message' => 'Order created successfully'], Response::HTTP_CREATED);
     }
 }

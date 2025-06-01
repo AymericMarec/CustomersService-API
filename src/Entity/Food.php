@@ -35,20 +35,9 @@ class Food
     #[Groups(['food_list', 'food_detail'])]
     private ?FoodType $type = null;
 
-    /**
-     * @var Collection<int, Order>
-     */
-    #[ORM\ManyToMany(targetEntity: Order::class, mappedBy: 'foods')]
-    private Collection $orders;
-
     #[ORM\Column(length: 255)]
     #[Groups(['food_list', 'food_detail'])]
     private ?string $picture = null;
-
-    public function __construct()
-    {
-        $this->orders = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -63,7 +52,6 @@ class Food
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -75,7 +63,6 @@ class Food
     public function setPrice(string $price): static
     {
         $this->price = $price;
-
         return $this;
     }
 
@@ -87,7 +74,6 @@ class Food
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -102,39 +88,17 @@ class Food
         return $this;
     }
 
-    /**
-     * @return Collection<int, Order>
-     */
-    public function getOrders(): Collection
+    public function isAperitif(): bool
     {
-        return $this->orders;
+        return $this->type === FoodType::APERITIF;
     }
 
-    public function addOrder(Order $order): static
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders->add($order);
-            $order->addFood($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): static
-    {
-        if ($this->orders->removeElement($order)) {
-            $order->removeFood($this);
-        }
-
-        return $this;
-    }
-
-    public function isEntree(): bool
+    public function isStarter(): bool
     {
         return $this->type === FoodType::STARTER;
     }
 
-    public function isPlat(): bool
+    public function isDish(): bool
     {
         return $this->type === FoodType::DISH;
     }
@@ -142,6 +106,11 @@ class Food
     public function isDessert(): bool
     {
         return $this->type === FoodType::DESSERT;
+    }
+
+    public function isDrink(): bool
+    {
+        return $this->type === FoodType::DRINK;
     }
 
     public function __toString(): string
@@ -157,7 +126,6 @@ class Food
     public function setPicture(string $picture): static
     {
         $this->picture = $picture;
-
         return $this;
     }
 }
