@@ -5,5 +5,5 @@ init:
 	php bin/console doctrine:fixtures:load
 
 start:
-	symfony server:start --no-tls
+	symfony server:start --no-tls &
 	cd WebSocket && npm start
