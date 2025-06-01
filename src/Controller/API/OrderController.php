@@ -11,7 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use GuzzleHttp\Client;
 
 #[Route('/api/orders')]
 class OrderController extends AbstractController
@@ -61,6 +62,23 @@ class OrderController extends AbstractController
 
         $em->persist($order);
         $em->flush();
+
+        $message = [
+            'tableNumber' => $data['tableNumber'] ?? null,
+            'type' => $data['type'] ?? 'entrees',
+            'time' => $data['time'] ?? date('H:i'),
+            'dishes' => $data['dishes'] ?? []
+        ];
+
+        $client = new Client();
+        try {
+            $client->post('http://localhost:8765/broadcast', [
+                'json' => $message
+            ]);
+        } catch (\Exception $e) {
+            error_log('Erreur WS : ' . $e->getMessage());
+
+        }
 
         return $this->json($order, Response::HTTP_CREATED, [], ['groups' => 'order_list']);
     }
